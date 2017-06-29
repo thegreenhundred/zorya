@@ -1,0 +1,18 @@
+<network>
+  <name>trashnat01</name>
+  <uuid>c68317c1-a650-4db8-ae0f-2ed9ce074dc4</uuid>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <mac address='52:54:00:0f:4c:ab'/>
+  <domain name='trashnat01'/>
+  <ip address='10.99.0.1' netmask='255.255.0.0'>
+    <dhcp>
+      <range start='10.99.52.0' end='10.99.255.254'/>
+    </dhcp>
+  </ip>
+</network>
+

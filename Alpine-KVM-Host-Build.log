@@ -1,0 +1,111 @@
+## Build Log for Generic CCIO KVM Host image
+
+## Download Server Image & make media (run from ram option ~330MB ISO)
+mkdir ~/Documents/Alpine_Build
+cd ~/DocumentsAlpine_Build
+wget http://dl-cdn.alpinelinux.org/alpine/v3.6/releases/x86_64/alpine-extended-3.6.2-x86_64.iso
+lsblk  ## determine which device you will use for usb media
+sudo dd if=alpine-extended-3.6.2-x86_64.iso of=/dev/[usb-drive] bs=16 conv=sync
+
+## Attach USB media & boot to Live OS Setup 
+## Login with username root and blank password
+## Execute following commands for example setup
+## Make logging file for notes & planning
+ #   Be sure to make notes including exact commands run \
+ #   Ethernet adapter names, ip addresses, disk names \
+ #   Host name and other details for future refrence & planning \
+touch alpine-linux-kvm.log && gedit alpine-linux-kvm.log
+
+## To use default setup scripts
+setup-alpine
+   # Set Keyboard Layout 'us'
+   us
+   # Set Variant Keyboard Layout 'us'
+   us
+   # Set Hostname IE: n001kvm
+   tn001kvm
+   # Initialize Ethernet Interface/s
+   # available options are displayed in prompt IE: eth0,eth1
+   eth1
+   # Set IP address manually or select 'dhcp' to obtain from network
+   dhcp
+   # Enter any manual network configuration or enter 'no' for autoconfig
+   no
+   # Set root password and confir when prompted
+   PASSWORD
+   # Set TimeZone 
+   # use '?' for list of options
+   America
+   Chicago
+   # Set HTTP Proxy information or enter 'none' to leave blank
+   none
+   # Enter Mirror Number for desired
+   # Alternatively enter 'r' to get assigned a random mirror
+   # This can be changed later
+   r
+   # Choose ssh server
+   # OpenSSH is offers standard features for full ssh sessions
+   # dropbear is compatible with all ssh clients but has limited features
+   # Others exist such as tinyssh which is light on resources and security aware
+   dropbear
+   # Set ntp client, openntpd is normal on generic linux distro's
+   # Default alpine linux ntp client is chrony
+   chrony
+   # Choose disk/s to install to or enter 'none' to skip installation 
+   # Option to skip is useful if you want to do more advanced partitioning/raid
+   sda
+   # Enter type of disk partitioning 
+   # Option lvmsys installs to device in sys mode with lvm
+   lvmsys
+   # Confirm overwriting existing data on disk
+   y
+   y
+   # First setup-alpine script is done
+## Reboot System to installed device
+
+## Setup initial OS
+## Update OS & Packages
+apk update && apk upgrade && apk install vim
+
+## Enable extra repo's as desired
+vim /etc/apk/repositories
+ # EG: un-comment 'community'
+ # EG: un-comment 'edge/main'
+ # EG: un-comment 'edge/community'
+ # EG: un-comment 'edge/testing'
+
+## update OS & Packages
+apk update && apk upgrade
+
+## For Advanced drive layout using 2 500 GB disks in RAID1 as /var
+## RAID1 provided by mdadm as /dev/md* device
+## Alternatives include lvm or btrfs
+
+## List Attached Storage Devices
+fdisk -l
+
+## Make note of desired disks
+ # EG: /dev/sdc 500GB
+ # EG: /dev/sdd 500GB
+## Review Documentation for advanced setup-disks usage
+ # EG: https://wiki.alpinelinux.org/wiki/Alpine_setup_scripts#setup-disk 
+## !OPTIONAL! : make note of flags & variables to run script
+ # EG: BOOTFS=btrfs
+ # EG: -m data    ## Flag indicates install mode is 'sys' for /var setup 
+ # EG: -v        ## Flag indicates install script will be verbose
+## All-Together the command looks like this: 
+ VARFS=btrfs setup-disk -m data -v /dev/sdc /dev/sdd
+ # When prompted, confirm erasing disks shown
+ y
+ # Your /var RAID1 is ready for use
+ # Reboot
+ 
+## install packages for libvirt/qemu
+touch kvm-packages.txt
+ # Add packages to kvm-packages.txt
+ # EG: qemu qemu-doc qemu-armeb qemu-system-arm qemu-guest-agent libvirt-qemu qemu-x86_64 qemu-system-x86_64 qemu-system-i386 qemu-i386 qemu-arm qemu-openrc qemu-img libvirt-dev libvirt-lxxc libvirt-glib libvirt-doc libvirt-uml libvirt-qemu py3-libvirt libvirt-daemon libvirt-glib-doc libvirt libvirt-common-drivers py-libvirt lxc-bridge bridge bridge-utils ebtables-doc iptables-doc iptables ip6tables ebtables
+
+## run apk install with package file as source
+apk add $(cat kvm-packages.txt)
+
+
