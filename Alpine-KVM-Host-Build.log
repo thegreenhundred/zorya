@@ -108,4 +108,13 @@ touch kvm-packages.txt
 ## run apk install with package file as source
 apk add $(cat kvm-packages.txt)
 
+## Enable nested KVM if AMD proc
+echo "options kvm-amd nested=1" >>/etc/modprobe.d/dist.conf
 
+## reload kvm-amd
+sudo rmmod kvm-amd && sudo modprobe kvm-amd
+modinfo kvm_amd | grep -i nested
+cat /sys/module/kvm_amd/parameters/nested
+
+
+## be sure to virsh edit ov-compute1 && change value to <cpu mode='host-passthrough'/>
